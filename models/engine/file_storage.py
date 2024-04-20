@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-"""THe FileStorage Class"""
 import json
 from models.base_model import BaseModel
 from models.user import User
@@ -16,29 +14,38 @@ class FileStorage:
     __file_path = "file.json"
     __objects = {}
 
-    def all(self):
-        """returns the dictionary __objects"""
-        return FileStorage.__objects
+    def all(self, cls=None):
+        """returns the dictionary __objects or a filtered dictionary based on the class type"""
+        if cls is None:
+            return self.__objects
+        else:
+            return {k: v for k, v in self.__objects.items() if isinstance(v, cls)}
 
     def new(self, obj):
         """sets in __objects the obj with key <obj class name>.id"""
-        FileStorage.__objects[f"{obj.__class__.__name__}.{obj.id}"] = obj
+        key = f"{obj.__class__.__name__}.{obj.id}"
+        self.__objects[key] = obj
 
     def save(self):
         """ serializes __objects to the JSON file"""
-        odict = FileStorage.__objects
-        objdict = {obj: odict[obj].to_dict() for obj in odict.keys()}
-        with open(FileStorage.__file_path, "w") as f:
-            json.dump(objdict, f)
+        objects_dict = {k: v.to_dict() for k, v in self.__objects.items()}
+        with open(self.__file_path, "w") as f:
+            json.dump(objects_dict, f)
 
     def reload(self):
         """deserializes the JSON file to __objects"""
         try:
-            with open(FileStorage.__file_path) as f:
-                obj_dict = json.load(f)
-                for o in obj_dict.values():
-                    class_name = o["__class__"]
-                    del o["__class__"]
-                    self.new(eval(class_name)(**o))
+            with open(self.__file_path) as f:
+                objects_dict = json.load(f)
+                for k, v in objects_dict.items():
+                    class_name = k.split(".")[0]
+                    self.new(eval(class_name).from_dict(v))
         except FileNotFoundError:
-            return
+            pass
+
+    def delete(self, obj=None):
+        """deletes obj from __objects if it’s inside"""
+        if obj is not None and obj in self.__objects.values():
+            for k, v in self.__objects.items():
+                if v == obj:
+                    del self.__objects[k]
