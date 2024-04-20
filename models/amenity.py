@@ -1,12 +1,13 @@
 #!/usr/bin/python3
-""" State Module for HBNB project """
-from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
+"""Defines the Amenity class."""
+from models.base_model import BaseModel
 
 
-class Amenity(BaseModel, Base):
-    """Amenity class that inherits from BaseModel and Base"""
-    __tablename__ = 'amenities'
+class Amenity(BaseModel):
+    """Represent an amenity.
 
-    name = Column(String(128), nullable=False)
+    Attributes:
+        name (str): The name of the amenity.
+    """
+
+    name = ""
